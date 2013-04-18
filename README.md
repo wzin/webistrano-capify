@@ -45,25 +45,7 @@ git clone git@github.com:wzin/webistrano-capify.git
 - configure your global.cfg file on the basis of .example file - you
   will need to expose your webistrano "capfile" route to access without
   login, and enable nginx http auth for it. To disable login just apply
-  the patch:
-  <code>
-  diff --git a/app/controllers/stages_controller.rb b/app/controllers/stages_controller.rb
-  old mode 100644
-  new mode 100755
-  index 7990935..43602e3
-  --- a/app/controllers/stages_controller.rb
-  +++ b/app/controllers/stages_controller.rb
-  @@ -1,7 +1,8 @@
-   class StagesController < ApplicationController
-   
-     before_filter :load_project
-  -  
-  +       skip_before_filter :login_from_cookie, :only => :capfile 
-  +       skip_before_filter :login_required, :only => :capfile 
-     # GET /projects/1/stages.xml
-     def index
-       @stages = current_project.stages
-  </code>
+  the patch that is included
 - configure your http server to proxy requests for server.py - nginx example is attached
 - launch server.py with 
 <code> 
