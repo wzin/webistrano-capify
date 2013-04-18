@@ -3,7 +3,7 @@ Webistrano-capify project
 
 If you use webistrano, this app will generate Capfile from your existing
 webistrano project. Purpose of this project is to help transition from
-webistrano app to Capfile being 100% backward compatible.
+webistrano app to Capfile. This is of course _beta hack_ :) 
 
 Overview
 ========
@@ -72,3 +72,19 @@ python server.py
 it will listen on port that is defined on the end of this file
 - you should now have http://yourcapify-host.com/ configured in such way it will return python script that will execute on the client side and gather the data, and then back request for capifile on the serverside
 - http://yourcapify-host.com/api/ is used for requests to specific capfiles of the projecs
+
+License
+=======
+Copyright (c) 2013, Wojciech Ziniewicz
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
