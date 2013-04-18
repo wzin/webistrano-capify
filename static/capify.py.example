@@ -1,0 +1,155 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#Please change 'CAPIFY_API_URL' to match your configuration e.g. http://yourhost.com/api/
+import os
+import tempfile
+import subprocess
+from os.path import expanduser
+
+class Conciousness(object):
+    def __init__(self):
+        self.user_home = expanduser("~")
+        self.user_ssh_config_path = self.user_home + "/.ssh/config"
+    def project_name(self):
+        '''Should return project_name in project.git format'''
+        try:
+            project = subprocess.Popen(["git", "config", "--get", "remote.origin.url"], stdout=subprocess.PIPE)
+            out, err = project.communicate()
+            return out.rstrip().split('/')[-1]
+        except:
+            print "Could not get project name"
+    def stage_name(self):
+        '''Should return string with git branch'''
+        try:
+            stage = subprocess.Popen(["git", "rev-parse", "--abbrev-ref", "HEAD"], stdout=subprocess.PIPE)
+            out, err = stage.communicate()
+            return out.rstrip()
+        except:
+            print "Could not get stage name"
+    def capfile_gitignore_entry(self):
+        '''Should return True or False depending on "Capfile" line in .gitignore'''
+        try:
+            if 'Capfile' in open('.gitignore').read():
+                return True
+            else:
+                return False
+        except:
+            print 'Could not open .gitignore file'
+    def ssh_config_host_entry(self, git_repo_url):
+        '''Should mock ssh entries like github-projectx to github.com - this is for ssh keys workaround'''
+        try:
+            print "checking %s in ssh config" % (git_repo_url)
+            if git_repo_url in open(self.user_ssh_config_path).read():
+                return True
+            else:
+                return False
+        except Exception as exc:
+            print 'Could not open ssh config file : %s' %(str(exc))
+    def user(self):
+        '''Should return user name'''
+        return os.getlogin()
+
+class Sanity(object):
+    def __init__(self, stage_name, project_name):
+				self.capify_url = 'CAPIFY_API_URL'
+				self.stage_name =	stage_name
+				self.project_name = project_name
+				self.user_home = expanduser("~")
+				self.user_ssh_config_path = self.user_home + "/.ssh/config"
+    def fetch_capfile(self):
+        '''Should return string with capfile or False'''
+        try:
+            curl_array = ["curl", "--data"] 
+            curl_array.append("req_type=capfile&stage_name=%s&project_name=%s" % (self.stage_name,self.project_name))
+            curl_array.append(self.capify_url)
+            capfile_request = subprocess.Popen(curl_array, stdout=subprocess.PIPE) 
+            out,err = capfile_request.communicate()
+            return out
+        except:
+            print "Could not fetch capfile"
+            raise
+            
+    def fetch_ssh_config(self):
+        '''Should return ssh config for ssh keys mocking or False'''
+        try:
+            curl_array = ["curl", "--data"] 
+            curl_array.append("'req_type=ssh_config&stage_name=%s&project_name=%s'" % (self.stage_name,self.project_name))
+            curl_array.append(self.capify_url)
+            capfile_request = subprocess.Popen(curl_array, stdout=subprocess.PIPE) 
+            out,err = capfile_request.communicate()
+            return out
+        except:
+            print 'Could not fetch ssh config'
+            raise
+
+    def mocked_repo_host(self):
+        capfile = open('Capfile', 'r')
+        for line in capfile:
+            if 'set :repository' in line:
+                mocked_repo_host=line.split('@')[1].split(':')[0]
+                return mocked_repo_host
+        
+    def manage_ssh_config(self):
+        '''Should add entry in ~/.ssh/config for mocking ssh hosts'''
+        try:
+            if 'github-' in self.mocked_repo_host():
+                ssh_crumb="\r\n\
+Host %s\r\n\
+    HostName github.com \r\n\
+    User git \r\n" % self.mocked_repo_host()
+            elif 'bitbucket-' in self.mocked_repo_host():
+                ssh_crumb="\r\n\
+Host %s\r\n\
+    HostName bitbucket.org \r\n\
+    User git \r\n" % self.mocked_repo_host()
+            else:
+                print "I dont know how to configure ssh_config file"
+
+            ssh_config_file = open(self.user_ssh_config_path, 'a')
+            ssh_config_file.write(ssh_crumb)
+            ssh_config_file.close()
+        except:
+            print "Could not manage ssh config file"
+            raise
+
+    def manage_gitignore(self):
+        '''Should add gitignore entries for capfile'''
+        try:
+            gitignore_file = open('.gitignore', 'a')
+            gitignore_file.write('Capfile')
+            gitignore_file.close()
+        except:
+            print "Could not manage gitignore file"
+            raise
+
+class Capify(object):
+    def __init__(self):
+        self.c = Conciousness()
+        self.s = Sanity(self.c.stage_name(), self.c.project_name())
+        print 'Initialized configuration'
+
+    def create_capfile(self,capfile_content):
+        capfile = open('Capfile', 'wb')
+        capfile.write(capfile_content)
+        capfile.close()
+
+    def run(self):
+        if self.c.capfile_gitignore_entry==True:
+            ok=True
+        else:
+            self.s.manage_gitignore()
+            ok=True
+        if ok==True:
+            self.create_capfile(self.s.fetch_capfile())
+        print "This is mocked_repo_host: %s" % self.s.mocked_repo_host()
+        if self.c.ssh_config_host_entry(self.s.mocked_repo_host())==True:
+            ok=True
+        else:
+            self.s.manage_ssh_config()
+            ok=True
+
+
+
+print "I'm initializing configuration"
+capify = Capify()
+capify.run()

@@ -1,0 +1,11 @@
+[global]
+;format is variable=value
+user=<webistrano_db_user>
+password=<your_db_pass>
+host=<your_db_host>
+static_root=<directory of catalogue with capify.py>
+pidfile_path=<place to store pid of server>
+webistrano_fqdn=<fqdn of your webistrano host>
+capfile_http_login=<capfile login for httpauth>
+capfile_http_password=<capfile pass for httpauth>
+capify_api_url=<should point to /api/ route where server.py is launched>

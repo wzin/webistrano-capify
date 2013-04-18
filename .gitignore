@@ -1,0 +1,5 @@
+capify.pid
+global.cfg
+*.pyc
+Capfile
+static/capify.py
